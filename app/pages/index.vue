@@ -1,3 +1,5 @@
 <template>   
-    <span>Главная</span>
+    <section class="mt-[32px]">
+        <UICarousel />
+    </section>
 </template>

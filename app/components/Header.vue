@@ -6,7 +6,7 @@
             <div class="ml-4 transform hover:-translate-y-0.5 transition-all duration-200">
                 <nuxt-link
                     to="/products"
-                    class="text-3xl bg-inverted text-inverted py-1 px-4 rounded-xl font-medium"
+                    class="text-[22px] bg-inverted text-inverted py-3 px-4 rounded-xl font-medium"
                     >Каталог</nuxt-link
                 >
             </div>
