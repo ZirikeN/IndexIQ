@@ -68,9 +68,10 @@ const items = [
         :items="items"
         class="w-full mx-auto"
     >
-        <div
+        <nuxt-link
             class="flex justify-center items-center h-[295px] w-full rounded-lg overflow-hidden"
             :style="{ backgroundColor: item.bg }"
+            to="/products"
         >
             <video
                 v-if="item.type === 'video'"
@@ -86,6 +87,6 @@ const items = [
                 :src="item.src"
                 class="max-h-full max-w-[960px] object-contain"
             />
-        </div>
+        </nuxt-link>
     </UCarousel>
 </template>

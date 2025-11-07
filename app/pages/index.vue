@@ -1,5 +1,7 @@
 <template>   
-    <section class="mt-[32px]">
-        <UICarousel />
-    </section>
+    <main class="mt-[32px]">
+        <section>
+            <UICarousel />
+        </section>
+    </main>
 </template>

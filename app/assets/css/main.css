@@ -7,10 +7,14 @@
 
 :root {
     --ui-container: var(--container-8xl);
+    --ui-text-muted: var(--color-gray-950);
+    --ui-text-dimmed: var(--color-gray-950)
 }
 
 .dark {
     --btn-dark: #fff;
+    --ui-text-muted: #fff;
+    --ui-text-dimmed: #fff;
 }
 
 /* SVG logo */

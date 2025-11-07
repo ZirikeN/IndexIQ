@@ -15,7 +15,7 @@
         <UISearch />
 
         <template #right>
-            <UNavigationMenu :items="items" />
+            <UNavigationMenu :items="items"/>
 
             <UColorModeButton />
         </template>

@@ -1,3 +1,11 @@
 <template>
-    <h1>Личный кабинет</h1>
+    <div class="flex justify-center items-center h-screen">
+        <AuthForm />
+    </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({
+    layout: "auth",
+});
+</script>
