@@ -1,5 +1,5 @@
 <template>
-    <div class="wrapper relative">
+    <div class="wrapper relative overflow-hidden">
         <!-- Тень верх -->
         <div
             class="absolute w-full -top-px transition-all text-primary shrink-0 duration-[400ms]"

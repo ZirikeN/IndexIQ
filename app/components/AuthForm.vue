@@ -1,11 +1,11 @@
 <template>
-    <UCard class="max-w-md w-full mx-auto border-1 border-primary">
+    <UCard class="max-w-md w-full mx-auto border border-primary">
         <template #header>
             <div class="text-center">
                 <h2 class="text-2xl font-bold">
                     {{ isLogin ? "Вход в аккаунт" : "Регистрация" }}
                 </h2>
-                <p class=" mt-2">
+                <p class="mt-2">
                     {{
                         isLogin
                             ? "Войдите в свой аккаунт"
@@ -69,31 +69,21 @@
     </UCard>
 </template>
 
-<script setup lang="ts">
+<!-- pages/auth.vue -->
+<script setup>
 import { object, string, pipe, email, minLength } from "valibot";
 
-// Типы для формы
-interface AuthForm {
-    email: string;
-    password: string;
-}
-
-// Состояние формы
-const state = reactive<AuthForm>({
+const state = reactive({
     email: "",
     password: "",
 });
 
-// Режим формы (логин/регистрация)
 const isLogin = ref(true);
-
-// Состояние загрузки
 const pending = ref(false);
-
-// Toast для уведомлений
 const toast = useToast();
 
-// Схема валидации
+const { signIn, signUp, user, getSession } = useAuth();
+
 const schema = object({
     email: pipe(string("Email обязателен"), email("Неверный формат email")),
     password: pipe(
@@ -102,54 +92,55 @@ const schema = object({
     ),
 });
 
+// Следим за изменением user и редиректим
+watch(user, (newUser) => {
+    if (newUser) {
+        setTimeout(() => {
+            navigateTo("/");
+        }, 1000);
+    }
+});
+
 // Обработка отправки формы
 async function onSubmit() {
     if (pending.value) return;
-
     pending.value = true;
 
     try {
-        // Здесь будет ваша логика API
+        let result;
         if (isLogin.value) {
-            // Логика входа
-            await loginUser(state);
-            toast.add({
-                title: "Успешный вход!",
-                color: "primary",
-            });
+            result = await signIn(state.email, state.password);
         } else {
-            // Логика регистрации
-            await registerUser(state);
-            toast.add({
-                title: "Регистрация успешна!",
-                color: "primary",
-            });
+            result = await signUp(state.email, state.password);
         }
 
-        // Редирект или очистка формы
+        if (result.error) {
+            throw new Error(result.error.message);
+        }
+
+        // Показываем успешное сообщение
+        toast.add({
+            title: isLogin.value ? "Успешный вход!" : "Регистрация успешна!",
+            description: isLogin.value
+                ? "Перенаправляем..."
+                : "Проверьте вашу почту",
+            color: "primary",
+        });
+
+        // Принудительно обновляем сессию
+        await getSession();
+
+        // Очистка формы
         state.email = "";
         state.password = "";
-    } catch (error: any) {
+    } catch (error) {
         toast.add({
             title: "Ошибка",
-            description: error.message || "Что-то пошло не так",
-            color: "warning",
+            description: error.message,
+            color: "error",
         });
     } finally {
         pending.value = false;
     }
-}
-
-// Заглушки для API функций (замените на реальные)
-async function loginUser(credentials: AuthForm) {
-    // Ваша логика входа
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("Login:", credentials);
-}
-
-async function registerUser(credentials: AuthForm) {
-    // Ваша логика регистрации
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log("Register:", credentials);
 }
 </script>
