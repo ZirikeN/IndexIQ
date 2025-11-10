@@ -4,6 +4,9 @@ export default defineNuxtConfig({
     devtools: { enabled: true },
     modules: ["@nuxt/image", "@nuxt/ui", "@pinia/nuxt"],
     css: ["@/assets/css/main.css"],
+    image: {
+        dir: "assets/img",
+    },
     runtimeConfig: {
         public: {
             supabaseUrl: process.env.SUPABASE_URL,
