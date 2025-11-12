@@ -3,6 +3,7 @@
 
 @theme {
     --container-8xl: 100rem;
+    --font-display: "Montserrat", sans-serif;
 }
 
 :root {
@@ -10,6 +11,7 @@
     --ui-text-muted: var(--color-gray-950);
     --ui-text-dimmed: var(--color-gray-950);
     --category-item-bg: #f5f5f5;
+    --ui-border: transparent;
 }
 
 .dark {

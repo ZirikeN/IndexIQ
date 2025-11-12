@@ -2,59 +2,20 @@
     <div class="container mx-auto p-4">
         <h1 class="text-3xl font-bold mb-8">Каталог товаров</h1>
 
-        <div v-if="pending" class="flex justify-center">
-            <UButton loading>Загрузка...</UButton>
-        </div>
-
-        <div v-else-if="error" class="text-red-500 text-center">
-            <UIcon
-                name="i-heroicons-exclamation-triangle"
-                class="w-8 h-8 mx-auto mb-2"
-            />
-            <p>Ошибка загрузки: {{ error.message }}</p>
-            <UButton
-                color="red"
-                variant="outline"
-                @click="refresh"
-                class="mt-4"
-            >
-                Попробовать снова
-            </UButton>
-        </div>
-
-        <div
-            v-else-if="!products || products.length === 0"
-            class="text-center py-8"
-        >
-            <UIcon
-                name="i-heroicons-inbox"
-                class="w-16 h-16 text-gray-400 mx-auto mb-4"
-            />
-            <h3 class="text-xl font-semibold mb-2">Товаров пока нет</h3>
-            <p class="text-gray-600 mb-4">Но скоро появятся!</p>
-        </div>
-
-        <div
-            v-else
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-        >
+        <div class="grid grid-cols-4 gap-6">
             <UCard
                 v-for="product in products"
                 :key="product.id"
-                class="hover:shadow-lg transition-shadow duration-300"
+                class="card-hover"
             >
-                <template #header>
-                    <h2 class="text-lg font-semibold line-clamp-2">
-                        {{ product.name }}
-                    </h2>
-                </template>
-
                 <div class="space-y-3">
-                    <img
-                        v-if="product.images && product.images[0]"
+                    <NuxtImg
+                        v-if="product.images"
                         :src="product.images[0]"
                         :alt="product.name"
-                        class="w-full h-48 object-cover rounded-md"
+                        class="w-full object-cover rounded-md cursor-pointer"
+                        loading="lazy"
+                        @click="navigateTo(`/products/${product.id}`)"
                     />
                     <div
                         v-else
@@ -66,21 +27,41 @@
                         />
                     </div>
 
-                    <p class="text-2xl font-bold text-primary">
+                    <p
+                        class="text-2xl font-medium text-primary cursor-pointer"
+                        @click="navigateTo(`/products/${product.id}`)"
+                    >
                         {{ product.price }} ₽
                     </p>
-                    <p class="text-gray-600 text-sm line-clamp-3">
-                        {{ product.description }}
-                    </p>
+                    <h3
+                        class="cursor-pointer"
+                        @click="navigateTo(`/products/${product.id}`)"
+                    >
+                        {{ product.name }}
+                    </h3>
+                    <p class="text-gray-600">{{ product.description }}</p>
                 </div>
 
                 <template #footer>
-                    <UButton
-                        block
-                        @click="navigateTo(`/products/${product.id}`)"
-                    >
-                        Подробнее
-                    </UButton>
+                    <div class="flex gap-2">
+                        <UButton
+                            icon="i-heroicons-heart"
+                            color="neutral"
+                            class="flex-1 cursor-pointer"
+                            variant="outline"
+                        >
+                            В избранное
+                        </UButton>
+
+                        <UButton
+                            icon="i-heroicons-shopping-cart"
+                            color="primary"
+                            class="flex-1 cursor-pointer"
+                            @click="handleAddToCart(product)"
+                        >
+                            В корзину
+                        </UButton>
+                    </div>
                 </template>
             </UCard>
         </div>
@@ -89,71 +70,70 @@
 
 <script setup>
 const { $supabase } = useNuxtApp();
-const debugInfo = ref(null);
 
-const {
-    pending,
-    data: products,
-    error,
-    refresh,
-} = await useAsyncData("products", async () => {
+// Инициализируем корзину
+const { addToCart } = useCart();
+
+const { data: products, error } = await useAsyncData("products", async () => {
     try {
-        console.log("🔄 Начинаем загрузку товаров...");
+        console.log("Запрос к Supabase...");
 
-        // Проверяем подключение к Supabase
-        const { data: session, error: sessionError } =
-            await $supabase.auth.getSession();
-        if (sessionError) {
-            console.error("❌ Ошибка сессии:", sessionError);
-        } else {
-            console.log("✅ Сессия:", session.session ? "есть" : "нет");
-        }
-
-        // Делаем запрос к товарам
-        const { data, error, count, status, statusText } = await $supabase
+        const { data, error } = await $supabase
             .from("products")
-            .select("*", { count: "exact" })
-            .eq("is_published", true)
-            .order("created_at", { ascending: false });
-
-        console.log("📦 Результат запроса:");
-        console.log("- Данные:", data);
-        console.log("- Ошибка:", error);
-        console.log("- Количество:", count);
-        console.log("- Статус:", status);
-        console.log("- Текст статуса:", statusText);
-
-        // Сохраняем отладочную информацию
-        debugInfo.value = {
-            dataLength: data?.length || 0,
-            error: error,
-            count: count,
-            status: status,
-            statusText: statusText,
-            timestamp: new Date().toISOString(),
-        };
+            .select("*")
+            .eq("is_published", true);
 
         if (error) {
-            console.error("❌ Ошибка Supabase:", error);
-            throw createError({
-                statusCode: 500,
-                statusMessage: `Ошибка базы данных: ${error.message}`,
-            });
+            console.error("Supabase Error:", error);
+            throw error;
         }
 
-        console.log(`✅ Успешно загружено ${data?.length || 0} товаров`);
+        console.log("Получены данные:", data);
         return data;
     } catch (err) {
-        console.error("💥 Критическая ошибка:", err);
-        throw err;
+        console.error("Ошибка в useAsyncData:", err);
+        return [];
     }
 });
 
-// Логируем итоговые состояния
-watchEffect(() => {
-    console.log("📊 Состояние загрузки:");
-    console.log("- pending:", pending.value);
-    console.log("- error:", error.value);
-    console.log("- products:", products.value);
-});
+// Функция добавления в корзину для каталога
+const handleAddToCart = (product) => {
+    addToCart(product, 1);
+
+    // Показываем уведомление
+    const toast = useToast();
+    toast.add({
+        title: "Товар добавлен в корзину",
+        description: product.name,
+        color: "green",
+        timeout: 3000,
+    });
+};
+
+// Добавьте это для отладки
+if (error.value) {
+    console.error("Ошибка useAsyncData:", error.value);
+}
+
+console.log("Products:", products.value);
 </script>
+
+<style scoped>
+.card-hover {
+    transition: all 0.2s ease-in-out;
+    transform: translateY(0);
+}
+
+.card-hover img {
+    transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 5px var(--color-primary);
+}
+
+.card-hover:hover img {
+    transform: scale(1.05);
+}
+</style>

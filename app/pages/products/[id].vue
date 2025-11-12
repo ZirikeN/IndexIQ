@@ -23,25 +23,42 @@
         </div>
 
         <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Галерея изображений -->
-            <div>
-                <img
-                    :src="product.images?.[0]"
-                    :alt="product.name"
-                    class="w-full h-96 object-cover rounded-lg mb-4"
-                />
-                <div
-                    v-if="product.images && product.images.length > 1"
-                    class="grid grid-cols-4 gap-2"
-                >
-                    <img
-                        v-for="(img, index) in product.images.slice(1)"
+            <!-- Галерея изображений с вертикальным слайдером -->
+            <div class="flex gap-4">
+                <!-- Миниатюры (вертикальный список) -->
+                <div class="flex flex-col space-y-2 w-20 flex-shrink-0">
+                    <button
+                        v-for="(img, index) in productImages"
                         :key="index"
-                        :src="img"
-                        :alt="`${product.name} - фото ${index + 2}`"
-                        class="w-full h-20 object-cover rounded cursor-pointer hover:opacity-80"
-                        @click="currentImage = img"
-                    />
+                        @click="currentImageIndex = index"
+                        :class="[
+                            'border-2 rounded-lg overflow-hidden transition-all duration-200 hover:border-primary object-cover',
+                            currentImageIndex === index
+                                ? 'border-primary scale-105'
+                                : 'border-gray-200',
+                        ]"
+                    >
+                        <NuxtImg
+                            :src="img"
+                            :alt="`${product.name} - изображение ${index + 1}`"
+                            class="w-full h-16 object-contain"
+                            loading="lazy"
+                        />
+                    </button>
+                </div>
+
+                <!-- Основное изображение -->
+                <div class="flex-1">
+                    <div
+                        class="h-[510px] flex items-center justify-center rounded-lg overflow-hidden"
+                    >
+                        <NuxtImg
+                            :src="currentImage"
+                            :alt="product.name"
+                            class="h-full max-w-full object-contain"
+                            loading="eager"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -50,59 +67,69 @@
                 <div>
                     <h1 class="text-3xl font-bold mb-2">{{ product.name }}</h1>
                     <p class="text-4xl font-bold text-primary mb-4">
-                        {{ product.price }} ₽
+                        {{ formatPrice(product.price) }}
                     </p>
                     <p class="text-gray-700">{{ product.description }}</p>
                 </div>
 
-                <!-- Характеристики -->
-                <UCard v-if="product.specifications">
-                    <template #header>
-                        <h3 class="text-lg font-semibold">Характеристики</h3>
-                    </template>
+                <div class="flex gap-8">
+                    <!-- Характеристики -->
+                    <UCard v-if="product.specifications">
+                        <template #header>
+                            <h3 class="text-lg font-semibold">
+                                Характеристики
+                            </h3>
+                        </template>
 
-                    <div class="space-y-2">
-                        <div
-                            v-for="(value, key) in product.specifications"
-                            :key="key"
-                            class="flex justify-between py-2 border-b border-gray-100 last:border-b-0"
-                        >
-                            <span class="font-medium text-gray-600"
-                                >{{ formatSpecKey(key) }}:</span
+                        <div class="space-y-2">
+                            <div
+                                v-for="(value, key) in product.specifications"
+                                :key="key"
+                                class="flex justify-between py-2 border-b border-gray-100 last:border-b-0"
                             >
-                            <span class="text-gray-900">{{ value }}</span>
+                                <span class="font-medium text-gray-600"
+                                    >{{ formatSpecKey(key) }}:</span
+                                >
+                                <span>{{ value }}</span>
+                            </div>
                         </div>
-                    </div>
-                </UCard>
+                    </UCard>
 
-                <!-- Комплектация -->
-                <UCard
-                    v-if="
-                        product.package_contents &&
-                        product.package_contents.length
-                    "
-                >
-                    <template #header>
-                        <h3 class="text-lg font-semibold">Комплектация</h3>
-                    </template>
+                    <!-- Комплектация -->
+                    <UCard
+                        v-if="
+                            product.package_contents &&
+                            product.package_contents.length
+                        "
+                    >
+                        <template #header>
+                            <h3 class="text-lg font-semibold">Комплектация</h3>
+                        </template>
 
-                    <ul class="space-y-2">
-                        <li
-                            v-for="(item, index) in product.package_contents"
-                            :key="index"
-                            class="flex items-center"
-                        >
-                            <UIcon
-                                name="i-heroicons-check"
-                                class="w-5 h-5 text-green-500 mr-2"
-                            />
-                            {{ item }}
-                        </li>
-                    </ul>
-                </UCard>
+                        <ul class="space-y-2">
+                            <li
+                                v-for="(
+                                    item, index
+                                ) in product.package_contents"
+                                :key="index"
+                                class="flex items-center"
+                            >
+                                <UIcon
+                                    name="i-heroicons-check"
+                                    class="w-5 h-5 text-green-500 mr-2"
+                                />
+                                {{ item }}
+                            </li>
+                        </ul>
+                    </UCard>
+                </div>
 
                 <!-- Кнопка добавления в корзину -->
-                <UButton size="lg" class="w-full" @click="addToCart(product)">
+                <UButton
+                    size="lg"
+                    class="w-full"
+                    @click="handleAddToCart(product)"
+                >
                     <UIcon
                         name="i-heroicons-shopping-cart"
                         class="w-5 h-5 mr-2"
@@ -118,6 +145,9 @@
 const route = useRoute();
 const { $supabase } = useNuxtApp();
 const productId = route.params.id;
+
+// Реактивные данные для слайдера
+const currentImageIndex = ref(0);
 
 const {
     pending,
@@ -142,16 +172,54 @@ const {
     return data;
 });
 
+// Инициализируем корзину
+const { addToCart } = useCart();
+
+// Обработка изображений товара
+const productImages = computed(() => {
+    if (!product.value) return [];
+
+    // Если images - это массив, используем его
+    if (Array.isArray(product.value.images)) {
+        return product.value.images;
+    }
+
+    // Если images - это строка, создаем массив из одного элемента
+    if (typeof product.value.images === "string") {
+        return [product.value.images];
+    }
+
+    // Если изображений нет, возвращаем пустой массив
+    return [];
+});
+
+// Текущее основное изображение
+const currentImage = computed(() => {
+    return productImages.value[currentImageIndex.value] || "";
+});
+
 // Функция для форматирования ключей характеристик
 const formatSpecKey = (key) => {
     const words = key.replace(/([A-Z])/g, " $1").toLowerCase();
     return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-// Функция добавления в корзину (заглушка)
-const addToCart = (product) => {
-    // Здесь будет логика добавления в корзину
-    console.log("Добавлен в корзину:", product);
-    // Можно использовать useToast из Nuxt UI для уведомлений
+// Функция для форматирования цены
+const formatPrice = (price) => {
+    return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
+};
+
+// Функция добавления в корзину
+const handleAddToCart = (product) => {
+    addToCart(product, 1);
+
+    // Показываем уведомление
+    const toast = useToast();
+    toast.add({
+        title: "Товар добавлен в корзину",
+        description: product.name,
+        color: "green",
+        timeout: 3000,
+    });
 };
 </script>

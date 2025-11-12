@@ -1,20 +1,20 @@
 <template>
     <div class="search-container">
         <UInput
-            class="flex"
+            class="flex mb-3"
             icon="i-heroicons-magnifying-glass-20-solid"
             placeholder="Найдите смартфоны, ноутбуки, аксессуары..."
         >
         </UInput>
 
         <!-- Декоративные подсказки -->
-        <div class="suggestions mt-3 flex flex-wrap gap-2">
+        <div class="suggestions flex flex-wrap gap-2">
             <UBadge
                 v-for="suggestion in popularSuggestions"
                 :key="suggestion"
                 variant="soft"
-                color="gray"
-                class="cursor-pointer hover:bg-gray-200 transition-colors"
+                color="neutral"
+                class="cursor-pointer hover:shadow-[0_0_0_2px_var(--color-primary)] transition-colors"
             >
                 {{ suggestion }}
             </UBadge>
