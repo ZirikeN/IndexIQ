@@ -64,13 +64,39 @@
 
             <!-- Информация о товаре -->
             <div class="space-y-6">
-                <div>
-                    <h1 class="text-3xl font-bold mb-2">{{ product.name }}</h1>
-                    <p class="text-4xl font-bold text-primary mb-4">
-                        {{ formatPrice(product.price) }}
-                    </p>
-                    <p class="text-gray-700">{{ product.description }}</p>
+                <!-- Заголовок и кнопка избранного -->
+                <div class="flex justify-between items-start gap-4">
+                    <div class="flex-1">
+                        <h1 class="text-3xl font-bold mb-2">
+                            {{ product.name }}
+                        </h1>
+                        <p class="text-4xl font-bold text-primary mb-4">
+                            {{ formatPrice(product.price) }}
+                        </p>
+                    </div>
+                    <UButton
+                        :icon="
+                            isInFavorites(product.id)
+                                ? 'i-heroicons-heart'
+                                : 'i-heroicons-heart-outline'
+                        "
+                        :color="isInFavorites(product.id) ? 'red' : 'gray'"
+                        :variant="
+                            isInFavorites(product.id) ? 'solid' : 'outline'
+                        "
+                        @click="toggleFavorite(product)"
+                        class="flex-shrink-0"
+                        size="lg"
+                    >
+                        {{
+                            isInFavorites(product.id)
+                                ? "В избранном"
+                                : "В избранное"
+                        }}
+                    </UButton>
                 </div>
+
+                <p class="text-gray-700">{{ product.description }}</p>
 
                 <div class="flex gap-8">
                     <!-- Характеристики -->
@@ -124,18 +150,32 @@
                     </UCard>
                 </div>
 
-                <!-- Кнопка добавления в корзину -->
-                <UButton
-                    size="lg"
-                    class="w-full"
-                    @click="handleAddToCart(product)"
-                >
-                    <UIcon
-                        name="i-heroicons-shopping-cart"
-                        class="w-5 h-5 mr-2"
+                <!-- Кнопки действий -->
+                <div class="flex gap-3">
+                    <UButton
+                        size="lg"
+                        class="flex-1"
+                        @click="handleAddToCart(product)"
+                    >
+                        <UIcon
+                            name="i-heroicons-shopping-cart"
+                            class="w-5 h-5 mr-2"
+                        />
+                        Добавить в корзину
+                    </UButton>
+
+                    <UButton
+                        :icon="
+                            isInFavorites(product.id)
+                                ? 'i-heroicons-heart'
+                                : 'i-heroicons-heart-outline'
+                        "
+                        :color="isInFavorites(product.id) ? 'red' : 'gray'"
+                        variant="outline"
+                        size="lg"
+                        @click="toggleFavorite(product)"
                     />
-                    Добавить в корзину
-                </UButton>
+                </div>
             </div>
         </div>
     </div>
@@ -146,7 +186,6 @@ const route = useRoute();
 const { $supabase } = useNuxtApp();
 const productId = route.params.id;
 
-// Реактивные данные для слайдера
 const currentImageIndex = ref(0);
 
 const {
@@ -172,48 +211,43 @@ const {
     return data;
 });
 
-// Инициализируем корзину
 const { addToCart } = useCart();
+const { isInFavorites, toggleFavorite, loadFavorites } = useFavorites();
 
-// Обработка изображений товара
+onMounted(() => {
+    loadFavorites();
+});
+
 const productImages = computed(() => {
     if (!product.value) return [];
 
-    // Если images - это массив, используем его
     if (Array.isArray(product.value.images)) {
         return product.value.images;
     }
 
-    // Если images - это строка, создаем массив из одного элемента
     if (typeof product.value.images === "string") {
         return [product.value.images];
     }
 
-    // Если изображений нет, возвращаем пустой массив
     return [];
 });
 
-// Текущее основное изображение
 const currentImage = computed(() => {
     return productImages.value[currentImageIndex.value] || "";
 });
 
-// Функция для форматирования ключей характеристик
 const formatSpecKey = (key) => {
     const words = key.replace(/([A-Z])/g, " $1").toLowerCase();
     return words.charAt(0).toUpperCase() + words.slice(1);
 };
 
-// Функция для форматирования цены
 const formatPrice = (price) => {
     return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
 };
 
-// Функция добавления в корзину
 const handleAddToCart = (product) => {
     addToCart(product, 1);
 
-    // Показываем уведомление
     const toast = useToast();
     toast.add({
         title: "Товар добавлен в корзину",

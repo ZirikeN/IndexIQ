@@ -6,8 +6,24 @@
             <UCard
                 v-for="product in products"
                 :key="product.id"
-                class="card-hover"
+                class="card-hover relative"
             >
+                <!-- Кнопка избранного в углу карточки -->
+                <div class="absolute top-3 right-3 z-10">
+                    <UButton
+                        :icon="
+                            isInFavorites(product.id)
+                                ? 'i-heroicons-heart'
+                                : 'i-heroicons-heart-outline'
+                        "
+                        :color="isInFavorites(product.id) ? 'red' : 'gray'"
+                        variant="solid"
+                        size="sm"
+                        class="bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
+                        @click="toggleFavorite(product)"
+                    />
+                </div>
+
                 <div class="space-y-3">
                     <NuxtImg
                         v-if="product.images"
@@ -45,12 +61,23 @@
                 <template #footer>
                     <div class="flex gap-2">
                         <UButton
-                            icon="i-heroicons-heart"
-                            color="neutral"
+                            :icon="
+                                isInFavorites(product.id)
+                                    ? 'i-heroicons-heart'
+                                    : 'i-heroicons-heart-outline'
+                            "
+                            :color="
+                                isInFavorites(product.id) ? 'red' : 'neutral'
+                            "
                             class="flex-1 cursor-pointer"
                             variant="outline"
+                            @click="toggleFavorite(product)"
                         >
-                            В избранное
+                            {{
+                                isInFavorites(product.id)
+                                    ? "В избранном"
+                                    : "В избранное"
+                            }}
                         </UButton>
 
                         <UButton
@@ -74,10 +101,17 @@ const { $supabase } = useNuxtApp();
 // Инициализируем корзину
 const { addToCart } = useCart();
 
+// Инициализируем избранное
+const { favorites, isInFavorites, toggleFavorite, loadFavorites } =
+    useFavorites();
+
+// Загружаем избранное при монтировании
+onMounted(() => {
+    loadFavorites();
+});
+
 const { data: products, error } = await useAsyncData("products", async () => {
     try {
-        console.log("Запрос к Supabase...");
-
         const { data, error } = await $supabase
             .from("products")
             .select("*")
@@ -88,7 +122,6 @@ const { data: products, error } = await useAsyncData("products", async () => {
             throw error;
         }
 
-        console.log("Получены данные:", data);
         return data;
     } catch (err) {
         console.error("Ошибка в useAsyncData:", err);
@@ -105,17 +138,10 @@ const handleAddToCart = (product) => {
     toast.add({
         title: "Товар добавлен в корзину",
         description: product.name,
-        color: "green",
+        color: "primary",
         timeout: 3000,
     });
 };
-
-// Добавьте это для отладки
-if (error.value) {
-    console.error("Ошибка useAsyncData:", error.value);
-}
-
-console.log("Products:", products.value);
 </script>
 
 <style scoped>
