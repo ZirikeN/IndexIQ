@@ -103,6 +103,10 @@ export const useCart = () => {
         loadCart();
     }
 
+    const isInCart = (productId: string) => {
+        return cart.value.some((item) => item.product.id === productId);
+    };
+
     return {
         cart,
         loading: readonly(loading),
@@ -112,5 +116,6 @@ export const useCart = () => {
         removeFromCart,
         updateQuantity,
         clearCart,
+        isInCart,
     };
 };

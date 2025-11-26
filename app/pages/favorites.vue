@@ -128,14 +128,6 @@
                                 >
                                     <UIcon name="i-heroicons-photo" class="w-12 h-12 text-gray-400" />
                                 </div>
-                                
-                                <!-- Бейдж избранного -->
-                                <div class="absolute top-2 left-2">
-                                    <UBadge color="red" variant="solid" size="sm">
-                                        <UIcon name="i-heroicons-heart" class="w-3 h-3 mr-1" />
-                                        В избранном
-                                    </UBadge>
-                                </div>
                             </div>
 
                             <!-- Информация о товаре -->

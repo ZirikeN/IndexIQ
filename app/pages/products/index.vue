@@ -2,29 +2,34 @@
     <div class="container mx-auto p-4">
         <h1 class="text-3xl font-bold mb-8">Каталог товаров</h1>
 
-        <div class="grid grid-cols-4 gap-6">
+        <!-- Прелоадер только для первоначальной загрузки -->
+        <div v-if="initialLoading" class="grid grid-cols-4 gap-6">
+            <UCard v-for="n in 8" :key="n" class="animate-pulse">
+                <div>
+                    <div class="w-full h-48 bg-gray-300 rounded-md"></div>
+                    <div class="h-6 bg-gray-300 rounded mt-2"></div>
+                    <div class="h-4 bg-gray-300 rounded mt-1"></div>
+                    <div class="h-4 bg-gray-300 rounded w-3/4 mt-1"></div>
+                </div>
+                <template #footer>
+                    <div class="flex gap-2">
+                        <div class="flex-1 h-10 bg-gray-300 rounded"></div>
+                        <div class="flex-1 h-10 bg-gray-300 rounded"></div>
+                    </div>
+                </template>
+            </UCard>
+        </div>
+
+        <div v-else class="grid grid-cols-4 gap-6">
             <UCard
                 v-for="product in products"
                 :key="product.id"
-                class="card-hover relative"
+                class="card-hover relative p-0"
+                :ui="{
+                    footer: 'p-0 pb-4',
+                }"
             >
-                <!-- Кнопка избранного в углу карточки -->
-                <div class="absolute top-3 right-3 z-10">
-                    <UButton
-                        :icon="
-                            isInFavorites(product.id)
-                                ? 'i-heroicons-heart'
-                                : 'i-heroicons-heart-outline'
-                        "
-                        :color="isInFavorites(product.id) ? 'red' : 'gray'"
-                        variant="solid"
-                        size="sm"
-                        class="bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
-                        @click="toggleFavorite(product)"
-                    />
-                </div>
-
-                <div class="space-y-3">
+                <div>
                     <NuxtImg
                         v-if="product.images"
                         :src="product.images[0]"
@@ -55,7 +60,7 @@
                     >
                         {{ product.name }}
                     </h3>
-                    <p class="text-gray-600">{{ product.description }}</p>
+                    <p>{{ product.description }}</p>
                 </div>
 
                 <template #footer>
@@ -63,15 +68,16 @@
                         <UButton
                             :icon="
                                 isInFavorites(product.id)
-                                    ? 'i-heroicons-heart'
-                                    : 'i-heroicons-heart-outline'
+                                    ? 'i-heroicons-heart-20-solid'
+                                    : 'i-heroicons-heart'
                             "
                             :color="
-                                isInFavorites(product.id) ? 'red' : 'neutral'
+                                isInFavorites(product.id) ? 'error' : 'neutral'
                             "
                             class="flex-1 cursor-pointer"
                             variant="outline"
-                            @click="toggleFavorite(product)"
+                            :loading="favoriteActionLoading === product.id"
+                            @click="handleToggleFavorite(product)"
                         >
                             {{
                                 isInFavorites(product.id)
@@ -81,12 +87,23 @@
                         </UButton>
 
                         <UButton
+                            v-if="!isInCart(product.id)"
                             icon="i-heroicons-shopping-cart"
                             color="primary"
-                            class="flex-1 cursor-pointer"
+                            class="flex-1 cursor-pointer text-white"
                             @click="handleAddToCart(product)"
                         >
                             В корзину
+                        </UButton>
+
+                        <UButton
+                            v-else
+                            icon="i-heroicons-shopping-bag"
+                            color="primary"
+                            class="flex-1 cursor-pointer"
+                            @click="navigateTo('/cart')"
+                        >
+                            В корзине
                         </UButton>
                     </div>
                 </template>
@@ -99,18 +116,32 @@
 const { $supabase } = useNuxtApp();
 
 // Инициализируем корзину
-const { addToCart } = useCart();
+const { addToCart, cart, isInCart } = useCart();
 
 // Инициализируем избранное
 const { favorites, isInFavorites, toggleFavorite, loadFavorites } =
     useFavorites();
 
-// Загружаем избранное при монтировании
-onMounted(() => {
-    loadFavorites();
+// Состояния загрузки
+const initialLoading = ref(true);
+const favoriteActionLoading = ref(null);
+
+// Загружаем данные
+onMounted(async () => {
+    try {
+        await loadFavorites();
+    } catch (error) {
+        console.error("Ошибка загрузки избранного:", error);
+    } finally {
+        initialLoading.value = false;
+    }
 });
 
-const { data: products, error } = await useAsyncData("products", async () => {
+const {
+    data: products,
+    pending,
+    error,
+} = await useAsyncData("products", async () => {
     try {
         const { data, error } = await $supabase
             .from("products")
@@ -129,6 +160,23 @@ const { data: products, error } = await useAsyncData("products", async () => {
     }
 });
 
+// Обработчик добавления/удаления из избранного БЕЗ уведомлений
+const handleToggleFavorite = async (product) => {
+    // Устанавливаем loading только для конкретного товара
+    favoriteActionLoading.value = product.id;
+
+    try {
+        // Просто вызываем toggleFavorite без дополнительных уведомлений
+        await toggleFavorite(product);
+        // Уведомление уже показывается внутри toggleFavorite
+    } catch (error) {
+        console.error("Ошибка при работе с избранным:", error);
+    } finally {
+        // Сбрасываем loading
+        favoriteActionLoading.value = null;
+    }
+};
+
 // Функция добавления в корзину для каталога
 const handleAddToCart = (product) => {
     addToCart(product, 1);
@@ -139,7 +187,7 @@ const handleAddToCart = (product) => {
         title: "Товар добавлен в корзину",
         description: product.name,
         color: "primary",
-        timeout: 3000,
+        timeout: 2000,
     });
 };
 </script>
