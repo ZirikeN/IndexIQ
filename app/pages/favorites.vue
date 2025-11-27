@@ -1,64 +1,83 @@
 <template>
-    <div class="container mx-auto p-6">
-        <UCard>
-            <template #header>
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold flex items-center gap-3">
-                            <UIcon name="i-heroicons-heart" class="w-8 h-8 text-red-500" />
-                            Избранное
-                        </h1>
-                        <p class="text-gray-600 mt-1">
-                            Товары, которые вам понравились
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <UBadge v-if="favorites.length > 0" color="blue" variant="subtle" size="lg">
-                            {{ favorites.length }} товаров
-                        </UBadge>
-                        <UButton
-                            to="/products"
-                            icon="i-heroicons-arrow-left"
-                            variant="outline"
-                        >
-                            К покупкам
-                        </UButton>
-                    </div>
-                </div>
-            </template>
+    <div class="container mx-auto p-4 max-w-7xl">
+        <!-- Заголовок -->
+        <div class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-3">
+                Избранное
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+                Товары, которые вам понравились
+            </p>
+        </div>
 
-            <div v-if="loading" class="flex justify-center py-12">
-                <div class="text-center">
-                    <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
-                    <p class="text-gray-600">Загрузка избранного...</p>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8"
+        >
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-3">
+                    <UIcon
+                        name="i-heroicons-heart"
+                        class="w-7 h-7 text-red-500"
+                    />
+                    <h2
+                        class="text-2xl font-bold text-gray-900 dark:text-white"
+                    >
+                        Избранные товары
+                    </h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <UBadge color="red" variant="subtle" size="lg">
+                        {{ favorites.length }} товаров
+                    </UBadge>
+                    <UButton
+                        to="/products"
+                        variant="outline"
+                        size="lg"
+                        icon="i-heroicons-shopping-cart"
+                        class="transition-all duration-300"
+                    >
+                        К покупкам
+                    </UButton>
                 </div>
             </div>
 
-            <div v-else-if="favorites.length === 0" class="text-center py-16">
+            <div v-if="loading" class="flex justify-center py-12">
+                <UButton loading size="xl">Загрузка избранного...</UButton>
+            </div>
+
+            <div v-else-if="favorites.length === 0" class="text-center py-12">
                 <div class="max-w-md mx-auto">
-                    <UIcon
-                        name="i-heroicons-heart"
-                        class="w-24 h-24 text-gray-300 mx-auto mb-6"
-                    />
-                    <h2 class="text-2xl font-bold text-gray-600 mb-3">
+                    <div
+                        class="w-32 h-32 bg-gradient-to-br from-red-100 to-pink-100 dark:from-red-900/20 dark:to-pink-900/20 rounded-full flex items-center justify-center mx-auto mb-6"
+                    >
+                        <UIcon
+                            name="i-heroicons-heart"
+                            class="w-16 h-16 text-red-400"
+                        />
+                    </div>
+                    <h3
+                        class="text-2xl font-bold text-gray-900 dark:text-white mb-3"
+                    >
                         В избранном пока пусто
-                    </h2>
-                    <p class="text-gray-500 mb-8 text-lg">
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-8 text-lg">
                         Добавляйте товары в избранное, чтобы не потерять их
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
                         <UButton
                             to="/products"
                             icon="i-heroicons-shopping-cart"
-                            size="lg"
+                            size="xl"
                             color="primary"
+                            class="transition-all duration-300"
                         >
                             Перейти к покупкам
                         </UButton>
                         <UButton
                             to="/account"
                             variant="outline"
-                            size="lg"
+                            size="xl"
+                            icon="i-heroicons-user-circle"
                         >
                             В личный кабинет
                         </UButton>
@@ -66,154 +85,158 @@
                 </div>
             </div>
 
-            <div v-else>
-                <!-- Статистика -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-8">
-                    <div class="flex flex-wrap gap-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <UIcon name="i-heroicons-heart" class="w-6 h-6 text-blue-600" />
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Всего товаров</p>
-                                <p class="text-2xl font-bold text-gray-900">{{ favorites.length }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                                <UIcon name="i-heroicons-currency-ruble" class="w-6 h-6 text-green-600" />
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Общая стоимость</p>
-                                <p class="text-2xl font-bold text-gray-900">{{ formatPrice(totalPrice) }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Сетка товаров -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <UCard
-                        v-for="favorite in favorites"
-                        :key="favorite.id"
-                        class="hover:shadow-lg transition-all duration-300 relative group"
-                    >
-                        <!-- Кнопка удаления -->
-                        <div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <UButton
-                                icon="i-heroicons-x-mark"
-                                color="red"
-                                variant="solid"
-                                size="sm"
-                                class="bg-white shadow-lg hover:bg-red-50"
-                                @click="removeFromFavorites(favorite.product_id)"
-                            />
-                        </div>
-
-                        <div class="space-y-4">
-                            <!-- Изображение -->
-                            <div 
-                                class="relative overflow-hidden rounded-lg bg-gray-100 cursor-pointer"
-                                @click="navigateTo(`/products/${favorite.products.id}`)"
+            <div
+                v-else
+                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"
+            >
+                <div
+                    v-for="favorite in favorites"
+                    :key="favorite.id"
+                    class="group bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-transparent hover:border-primary"
+                >
+                    <div class="flex flex-col h-full">
+                        <!-- Изображение товара -->
+                        <div class="relative mb-4">
+                            <div
+                                class="w-full min-h-[192px] rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center p-4 cursor-pointer"
+                                @click="
+                                    navigateToProduct(favorite.products?.id)
+                                "
                             >
                                 <NuxtImg
                                     v-if="favorite.products?.images?.[0]"
                                     :src="favorite.products.images[0]"
-                                    :alt="favorite.products.name"
-                                    class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                                    :alt="favorite.products?.name || 'Товар'"
+                                    class="max-w-full max-h-40 object-contain transition-transform duration-300 group-hover:scale-105"
+                                    loading="lazy"
                                 />
                                 <div
                                     v-else
-                                    class="w-full h-48 flex items-center justify-center"
+                                    class="w-full h-40 flex items-center justify-center"
                                 >
-                                    <UIcon name="i-heroicons-photo" class="w-12 h-12 text-gray-400" />
+                                    <UIcon
+                                        name="i-heroicons-photo"
+                                        class="w-12 h-12 text-gray-400"
+                                    />
                                 </div>
                             </div>
 
-                            <!-- Информация о товаре -->
-                            <div class="space-y-3">
-                                <h3
-                                    class="font-semibold text-lg cursor-pointer line-clamp-2 hover:text-primary transition-colors"
-                                    @click="navigateTo(`/products/${favorite.products.id}`)"
-                                >
-                                    {{ favorite.products.name }}
-                                </h3>
+                            <!-- Кнопка удаления из избранного -->
+                            <UButton
+                                icon="i-heroicons-heart-20-solid"
+                                color="red"
+                                variant="solid"
+                                size="sm"
+                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg"
+                                @click="
+                                    removeFromFavorites(favorite.product_id)
+                                "
+                                :title="'Удалить из избранного'"
+                            />
+                        </div>
 
-                                <p class="text-2xl font-bold text-primary">
+                        <!-- Информация о товаре -->
+                        <div class="flex-1 flex flex-col">
+                            <h3
+                                class="font-bold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2 cursor-pointer hover:text-primary transition-colors duration-200"
+                                @click="
+                                    navigateToProduct(favorite.products?.id)
+                                "
+                            >
+                                {{
+                                    favorite.products?.name ||
+                                    "Неизвестный товар"
+                                }}
+                            </h3>
+
+                            <p
+                                v-if="favorite.products?.description"
+                                class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 flex-1"
+                            >
+                                {{ favorite.products.description }}
+                            </p>
+                            <p
+                                v-else
+                                class="text-gray-400 dark:text-gray-500 text-sm mb-4 italic flex-1"
+                            >
+                                Описание отсутствует
+                            </p>
+
+                            <div class="mt-auto">
+                                <p
+                                    class="text-2xl font-bold text-primary mb-4"
+                                    v-if="favorite.products?.price"
+                                >
                                     {{ formatPrice(favorite.products.price) }}
                                 </p>
-
-                                <p class="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                                    {{ favorite.products.description || 'Описание отсутствует' }}
-                                </p>
-                            </div>
-
-                            <!-- Кнопки действий -->
-                            <div class="flex gap-2 pt-2">
-                                <UButton
-                                    icon="i-heroicons-shopping-cart"
-                                    color="primary"
-                                    class="flex-1"
-                                    @click="handleAddToCart(favorite.products)"
-                                    :disabled="!favorite.products"
+                                <p
+                                    v-else
+                                    class="text-lg font-semibold text-gray-400 mb-4"
                                 >
-                                    В корзину
-                                </UButton>
-                                <UButton
-                                    icon="i-heroicons-eye"
-                                    variant="outline"
-                                    @click="navigateTo(`/products/${favorite.products.id}`)"
-                                />
+                                    Цена не указана
+                                </p>
+
+                                <div class="flex gap-2">
+                                    <UButton
+                                        block
+                                        color="primary"
+                                        @click="
+                                            navigateToProduct(
+                                                favorite.products?.id
+                                            )
+                                        "
+                                        class="flex-1"
+                                        :disabled="!favorite.products"
+                                    >
+                                        Подробнее
+                                    </UButton>
+                                    <UButton
+                                        icon="i-heroicons-shopping-cart"
+                                        color="emerald"
+                                        @click="
+                                            handleAddToCart(favorite.products)
+                                        "
+                                        :title="'Добавить в корзину'"
+                                        :disabled="!favorite.products"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </UCard>
-                </div>
-
-                <!-- Пустое состояние при фильтрации -->
-                <div v-if="favorites.length === 0" class="text-center py-12">
-                    <UIcon name="i-heroicons-magnifying-glass" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 class="text-lg font-semibold text-gray-600 mb-2">Товары не найдены</h3>
-                    <p class="text-gray-500">Попробуйте изменить параметры поиска</p>
+                    </div>
                 </div>
             </div>
-        </UCard>
+        </div>
     </div>
 </template>
 
 <script setup>
-const { 
-    favorites, 
-    loadFavorites, 
-    removeFromFavorites,
-    loading 
-} = useFavorites();
+const { favorites, loadFavorites, removeFromFavorites, loading } =
+    useFavorites();
 
 const { addToCart } = useCart();
 
-// Общая стоимость избранного
-const totalPrice = computed(() => {
-    return favorites.value.reduce((total, favorite) => {
-        return total + (favorite.products?.price || 0);
-    }, 0);
-});
-
 const handleAddToCart = (product) => {
     if (!product) return;
-    
+
     addToCart(product, 1);
-    
+
     const toast = useToast();
     toast.add({
         title: "Товар добавлен в корзину",
         description: product.name,
-        color: "green",
+        color: "primary",
         timeout: 3000,
     });
 };
 
 const formatPrice = (price) => {
-    if (!price) return '0 ₽';
+    if (!price) return "0 ₽";
     return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
+};
+
+const navigateToProduct = (productId) => {
+    if (!productId) return;
+    navigateTo(`/products/${productId}`);
 };
 
 // Загружаем избранное при монтировании
@@ -223,7 +246,16 @@ onMounted(() => {
 
 // Обновляем заголовок страницы
 useSeoMeta({
-    title: 'Избранное - Мои товары',
-    description: 'Просмотрите товары, добавленные в избранное'
+    title: "Избранное - Мои товары",
+    description: "Просмотрите товары, добавленные в избранное",
 });
 </script>
+
+<style scoped>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
