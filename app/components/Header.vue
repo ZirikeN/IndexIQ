@@ -14,8 +14,6 @@
             </div>
         </template>
 
-        <UISearch />
-
         <template #right>
             <UNavigationMenu :items="items" />
 
