@@ -127,7 +127,7 @@
                                 color="red"
                                 variant="solid"
                                 size="sm"
-                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg"
+                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg cursor-pointer"
                                 @click="
                                     removeFromFavorites(favorite.product_id)
                                 "

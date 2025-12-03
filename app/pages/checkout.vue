@@ -207,7 +207,7 @@
                                 placeholder="Дополнительные пожелания к заказу..."
                                 :disabled="loading"
                                 :rows="6"
-                                class="text-lg min-h-[180px] resize-y"
+                                class="text-lg min-h-[180px] w-full resize-y"
                                 :ui="{
                                     base: 'block w-full resize-y rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors duration-200',
                                 }"
@@ -221,7 +221,7 @@
             <div class="xl:col-span-1 space-y-6">
                 <!-- Товары в заказе -->
                 <div
-                    class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sticky top-6"
+                    class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 top-6"
                 >
                     <h3
                         class="text-2xl font-bold text-gray-900 dark:text-white mb-6"

@@ -1,45 +1,71 @@
 <template>
-    <div class="">
+    <div>
         <ul class="grid grid-cols-6 grid-rows-2 gap-4">
-            <li v-for="item in items" :key="item" class="bg-[var(--category-item-bg)] flex items-center justify-center rounded-lg pt-2 pb-2 pl-4 pr-4 cursor-pointer transform hover:-translate-y-1 transition-all duration-200">
-                <NuxtImg :src="item.img" class="w-[84px] h-[84px]"/>
-                <span>{{ item.title }}</span>
+            <li
+                v-for="item in categoryItems"
+                :key="item.id"
+                class="bg-[var(--category-item-bg)] flex items-center justify-center rounded-lg pt-2 pb-2 pl-4 pr-4 cursor-pointer transform hover:-translate-y-1 transition-all duration-200 group"
+                @click="navigateToCategory(item)"
+            >
+                <NuxtImg
+                    :src="item.img"
+                    :alt="item.title"
+                    class="w-[84px] h-[84px] transition-transform duration-300 group-hover:scale-110"
+                />
+                <span class="ml-3 font-medium text-lg">{{ item.title }}</span>
             </li>
         </ul>
     </div>
 </template>
 
 <script setup>
-const items = [
-    {   
-        title: 'Смартфоны',
+const router = useRouter();
+
+// Карта категорий с корректными названиями, соответствующими базе данных
+const categoryItems = [
+    {
+        id: "smartphones",
+        title: "Смартфоны",
         img: "/phones.png",
-        src: "#",
+        categoryName: "Смартфоны", // Как хранится в базе данных
     },
     {
-        title: 'Планшеты',
+        id: "tablets",
+        title: "Планшеты",
         img: "/tablets.png",
-        src: "#",
+        categoryName: "Планшеты",
     },
     {
-        title: 'Ноутбуки и ПК',
+        id: "laptops",
+        title: "Ноутбуки и ПК",
         img: "/PCs.png",
-        src: "#",
+        categoryName: "Ноутбуки",
     },
     {
-        title: 'Умные часы',
+        id: "smartwatches",
+        title: "Умные часы",
         img: "/watch.png",
-        src: "#",
+        categoryName: "Часы",
     },
     {
-        title: 'Игровые приставки',
+        id: "consoles",
+        title: "Игровые приставки",
         img: "/consoles.png",
-        src: "#",
+        categoryName: "Игровые приставки",
     },
     {
-        title: 'Телевизоры',
+        id: "tvs",
+        title: "Телевизоры",
         img: "/TVS.png",
-        src: "#",
+        categoryName: "Телевизоры",
     },
 ];
+
+// Навигация на страницу категории
+const navigateToCategory = (category) => {
+    router.push({
+        path: `/categories/${category.id}`,
+        query: { name: category.categoryName },
+    });
+};
 </script>
