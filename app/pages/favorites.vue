@@ -13,7 +13,7 @@
         <div
             class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8"
         >
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex justify-center items-center mb-8 flex-wrap gap-4 lg:justify-between">
                 <div class="flex items-center gap-3">
                     <UIcon
                         name="i-heroicons-heart"
